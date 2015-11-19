@@ -8,7 +8,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hashicorp/hcl"
-	"github.com/nadnerb/cli_output"
+	"github.com/nadnerb/cli_command"
 )
 
 type AwsConfig struct {
@@ -30,7 +30,7 @@ func LoadConfig(config string, environment string) *AwsConfig {
 	tfVars := TerraformVars(configLocation(config), environment)
 	awsConfig, err := LoadAwsConfig(tfVars)
 	if err != nil {
-		output.Error("Error", err)
+		command.Error("Error Loading Terraform Vars", err)
 	}
 	fmt.Printf("Using terraform config: %s\n", cyan(tfVars))
 	fmt.Println()
@@ -66,7 +66,7 @@ func TerraformState(environment string) string {
 func configLocation(config string) string {
 	if len(config) > 0 {
 		if _, err := os.Stat(config); os.IsNotExist(err) {
-			output.Error("Directory does not exist", err)
+			command.Error("Directory does not exist", err)
 		}
 		return config
 	} else {
@@ -78,7 +78,7 @@ func defaultConfig() string {
 	defaultConfig, _ := filepath.Abs("./config/")
 	fmt.Printf("Using default config location: %s\n", cyan(defaultConfig))
 	if _, err := os.Stat(defaultConfig); os.IsNotExist(err) {
-		output.Error("Directory does not exist", err)
+		command.Error("Directory does not exist", err)
 	}
 	return defaultConfig
 }
