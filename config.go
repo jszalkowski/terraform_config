@@ -60,6 +60,12 @@ func TerraformVars(configLocation string, environment string) string {
 }
 
 func TerraformState(environment string) string {
+	src, err := os.Stat("." + string(filepath.Separator) + "tfstate")
+	if err != nil {
+		os.Mkdir("." + string(filepath.Separator) + "tfstate",0777)
+	} else if !src.IsDir() {
+		command.Error("tfstate is not a directory", err)
+	}
 	return fmt.Sprintf("./tfstate/%s/terraform.tfstate", environment)
 }
 
