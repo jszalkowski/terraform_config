@@ -11,7 +11,7 @@ import (
 func TestTerraformStateCreatesDir(t *testing.T) {
 
 	stateDir := "." + string(filepath.Separator) + "tfstate"
-	os.Remove(stateDir)
+	os.RemoveAll(stateDir)
 
 	tfState := TerraformState("foo")
 	src, err := os.Stat(stateDir)
@@ -19,6 +19,17 @@ func TestTerraformStateCreatesDir(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "./tfstate/foo/terraform.tfstate", tfState)
 	assert.True(t, src.IsDir())
-	os.Remove(stateDir)
+	os.RemoveAll(stateDir)
 }
 
+func TestTerraformStateCreatesStateIfEmpty(t *testing.T) {
+
+	stateDir := "." + string(filepath.Separator) + "tfstate"
+
+	TerraformState("foo")
+	src, err := os.Stat("./tfstate/foo/terraform.tfstate")
+
+	assert.Nil(t, err)
+	assert.False(t, src.IsDir())
+	os.RemoveAll(stateDir)
+}

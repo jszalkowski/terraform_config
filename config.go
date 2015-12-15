@@ -2,8 +2,8 @@ package terraform_config
 
 import (
 	"fmt"
-	"os"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/fatih/color"
@@ -61,12 +61,22 @@ func TerraformVars(configLocation string, environment string) string {
 
 func TerraformState(environment string) string {
 	src, err := os.Stat("." + string(filepath.Separator) + "tfstate")
+	terraformState := fmt.Sprintf("./tfstate/%s/terraform.tfstate", environment)
 	if err != nil {
-		os.Mkdir("." + string(filepath.Separator) + "tfstate",0777)
+		tempStateFile(environment, terraformState)
 	} else if !src.IsDir() {
 		command.Error("tfstate is not a directory", err)
 	}
-	return fmt.Sprintf("./tfstate/%s/terraform.tfstate", environment)
+	return terraformState
+}
+
+func tempStateFile(environment string, terraformState string) {
+	os.MkdirAll("." + string(filepath.Separator) + "tfstate" + string(filepath.Separator) + environment, 0777)
+	bytes := []byte("")
+	err := ioutil.WriteFile(terraformState, bytes, 0644)
+	if err != nil {
+		command.Warn("create tfstate fail, please make sure you ensure you are syncing state to S3", err)
+	}
 }
 
 func configLocation(config string) string {
