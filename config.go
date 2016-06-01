@@ -59,9 +59,11 @@ func TerraformVars(configLocation string, environment string) string {
 	return filepath.Clean(fmt.Sprintf("%s/%s.tfvars", configLocation, environment))
 }
 
+// has side effects
 func TerraformState(environment string) string {
-	src, err := os.Stat("." + string(filepath.Separator) + "tfstate")
-	terraformState := fmt.Sprintf("./tfstate/%s/terraform.tfstate", environment)
+	directory := "." + string(filepath.Separator) + "tfstate" + string(filepath.Separator) + environment
+	src, err := os.Stat(directory)
+	terraformState := fmt.Sprintf("%s/terraform.tfstate", directory)
 	if err != nil {
 		tempStateFile(environment, terraformState)
 	} else if !src.IsDir() {
@@ -75,7 +77,7 @@ func tempStateFile(environment string, terraformState string) {
 	bytes := []byte("")
 	err := ioutil.WriteFile(terraformState, bytes, 0644)
 	if err != nil {
-		command.Warn("create tfstate fail, please make sure you ensure you are syncing state to S3", err)
+		command.Warn("create tfstate fail, please make sure can create the tfstate directory", err)
 	}
 }
 
