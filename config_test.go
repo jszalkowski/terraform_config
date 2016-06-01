@@ -37,14 +37,3 @@ func TestTerraformStateCreatesEnvironmentDir(t *testing.T) {
 	os.RemoveAll(stateDir)
 }
 
-func TestTerraformStateCreatesStateIfEmpty(t *testing.T) {
-
-	stateDir := "." + string(filepath.Separator) + "tfstate"
-
-	TerraformState("foo")
-	src, err := os.Stat("./tfstate/foo/terraform.tfstate")
-
-	assert.Nil(t, err)
-	assert.False(t, src.IsDir())
-	os.RemoveAll(stateDir)
-}

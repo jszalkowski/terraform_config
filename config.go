@@ -65,20 +65,11 @@ func TerraformState(environment string) string {
 	src, err := os.Stat(directory)
 	terraformState := fmt.Sprintf("%s/terraform.tfstate", directory)
 	if err != nil {
-		tempStateFile(environment, terraformState)
+		os.MkdirAll(directory, 0777)
 	} else if !src.IsDir() {
 		command.Error("tfstate is not a directory", err)
 	}
 	return terraformState
-}
-
-func tempStateFile(environment string, terraformState string) {
-	os.MkdirAll("." + string(filepath.Separator) + "tfstate" + string(filepath.Separator) + environment, 0777)
-	bytes := []byte("")
-	err := ioutil.WriteFile(terraformState, bytes, 0644)
-	if err != nil {
-		command.Warn("create tfstate fail, please make sure can create the tfstate directory", err)
-	}
 }
 
 func configLocation(config string) string {
