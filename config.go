@@ -11,39 +11,48 @@ import (
 	"github.com/nadnerb/cli_command"
 )
 
-type AwsConfig struct {
+type TerraformConfig struct {
 	// s3 bucket name
 	S3_bucket string
 	// s3 key
 	S3_key string
 	// aws region
 	Aws_region string
-	// ssh key
-	Key_path string
+	// config dir path
+	Config_path string
+	// state dir path
+	State_path string
+	// tf vars file
+	Tf_vars string
 }
 
 var cyan = color.New(color.FgCyan).SprintFunc()
 var red = color.New(color.FgRed).SprintFunc()
 var bold = color.New(color.FgWhite, color.Bold).SprintFunc()
 
-func LoadConfig(config string, environment string) *AwsConfig {
+func LoadConfig(config string, environment string) *TerraformConfig {
+	derivedConfigPath := configLocation(config)
 	tfVars := TerraformVars(configLocation(config), environment)
-	awsConfig, err := LoadAwsConfig(tfVars)
+	terraformConfig, err := LoadTerraformConfig(tfVars)
+	terraformConfig.Tf_vars = tfVars
+	terraformConfig.State_path = terraformState(environment)
+	terraformConfig.Config_path = derivedConfigPath
+
 	if err != nil {
 		command.Error("Error Loading Terraform Vars", err)
 	}
 	fmt.Printf("Using terraform config: %s\n", cyan(tfVars))
 	fmt.Println()
 	fmt.Println("AWS credentials")
-	fmt.Println("s3 bucket: ", bold(awsConfig.S3_bucket))
-	fmt.Println("s3 key:    ", bold(awsConfig.S3_key))
-	fmt.Println("aws region:", bold(awsConfig.Aws_region))
+	fmt.Println("s3 bucket: ", bold(terraformConfig.S3_bucket))
+	fmt.Println("s3 key:    ", bold(terraformConfig.S3_key))
+	fmt.Println("aws region:", bold(terraformConfig.Aws_region))
 	fmt.Println()
-	return awsConfig
+	return terraformConfig
 }
 
-func LoadAwsConfig(path string) (*AwsConfig, error) {
-	var value AwsConfig
+func LoadTerraformConfig(path string) (*TerraformConfig, error) {
+	var value TerraformConfig
 
 	if _, err := os.Stat(path); err != nil {
 		return nil, err
@@ -60,7 +69,7 @@ func TerraformVars(configLocation string, environment string) string {
 }
 
 // has side effects
-func TerraformState(environment string) string {
+func terraformState(environment string) string {
 	directory := "." + string(filepath.Separator) + "tfstate" + string(filepath.Separator) + environment
 	src, err := os.Stat(directory)
 	terraformState := fmt.Sprintf("%s/terraform.tfstate", directory)
